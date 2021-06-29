@@ -20,7 +20,7 @@ namespace FactureAutoImport
                 new AutoImport()
             };
             ServiceBase.Run(ServicesToRun);
-            /*if (Environment.UserInteractive)
+           /* if (Environment.UserInteractive)
             {
                 AutoImport service1 = new AutoImport();
                 service1.TestStartupAndStop(args);

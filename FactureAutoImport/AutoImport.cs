@@ -64,6 +64,14 @@ namespace FactureAutoImport
             SetServiceStatus(this.ServiceHandle, ref serviceStatus);
 
             eventLog1.WriteEntry("In OnStart.");
+            try
+            {
+                GetAllEmails(Convert.ToString(ConfigurationManager.AppSettings["HostAddress"]));
+            }
+            catch (Exception ex)
+            {
+                eventLog1.WriteEntry(ex.InnerException.Message, EventLogEntryType.Error, eventId++);
+            }
 
             System.Timers.Timer timer = new System.Timers.Timer();
             timer.Interval = 10000; // 10 seconds
@@ -86,14 +94,13 @@ namespace FactureAutoImport
         public void OnTimer(object sender, ElapsedEventArgs args)
         {
             // TODO: Insert monitoring activities here.
-            // eventLog1.WriteEntry("Monitoring the System", EventLogEntryType.Information, eventId++);
+            eventLog1.WriteEntry("Monitoring the System", EventLogEntryType.Information, eventId++);
             System.Threading.Thread.Sleep(10000);
 
 
             try
             {
-                List<Gmail> MailLists = GetAllEmails(Convert.ToString(ConfigurationManager.AppSettings["HostAddress"]));
-
+                 GetAllEmails(Convert.ToString(ConfigurationManager.AppSettings["HostAddress"]));
             }
             catch (Exception ex)
             {
@@ -102,19 +109,13 @@ namespace FactureAutoImport
             
         }
 
-        public  List<Gmail> GetAllEmails(string HostEmailAddress)
+        public  void GetAllEmails(string HostEmailAddress)
         {
             try
             {
                 GmailService GmailService = GmailAPIHelper.GetService();
                 List<Gmail> EmailList = new List<Gmail>();
                 UsersResource.MessagesResource.ListRequest ListRequest = GmailService.Users.Messages.List(HostEmailAddress);
-              /*  UsersResource.LabelsResource.ListRequest ListRequestLabel = GmailService.Users.Labels.List(HostEmailAddress);
-                ListLabelsResponse listLabels = ListRequestLabel.Execute();
-                foreach (Label label in listLabels.Labels)
-                {
-                    Console.WriteLine("\n" + label.Id +":"+ label.Name);
-                }*/
                 ListRequest.LabelIds = "Label_8051553239077085895";
                 ListRequest.IncludeSpamTrash = false;
                 ListRequest.Q = "is:unread"; //only from unread emails
@@ -165,37 +166,19 @@ namespace FactureAutoImport
                             //READ MAIL BODY
                             Console.WriteLine("STEP-2: Read Mail Body");
                             List<string> FileName = GmailAPIHelper.GetAttachments(HostEmailAddress, Msg.Id, Convert.ToString(ConfigurationManager.AppSettings["GmailAttach"]));
-                            eventLog1.WriteEntry("mail de : " + FromAddress, EventLogEntryType.Information, eventId++);
-                            if (FileName.Count() > 0)
+                            if (FileName != null)
                             {
-                                foreach (var EachFile in FileName)
-                                {
-                                    //GET USER ID USING FROM EMAIL ADDRESS-------------------------------------------------------
-                                    string[] RectifyFromAddress = FromAddress.Split(' ');
-                                    string FromAdd = RectifyFromAddress[RectifyFromAddress.Length - 1];
-
-                                    if (!string.IsNullOrEmpty(FromAdd))
-                                    {
-                                        FromAdd = FromAdd.Replace("<", string.Empty);
-                                        FromAdd = FromAdd.Replace(">", string.Empty);
-                                    }
-                                }
+                                eventLog1.WriteEntry("mail de : " + FromAddress, EventLogEntryType.Information, eventId++);
                             }
-                            else
-                            {
-                               
-                            }
-                           
+                          
                         }
                     }
                 }
-                return EmailList;
+              
             }
             catch (Exception ex)
             {
                 eventLog1.WriteEntry(ex.Message, EventLogEntryType.Error, eventId++);
-
-                return null;
             }
         }
 

@@ -60,7 +60,7 @@ namespace FactureAutoImport.Apihelper
                     {
                         string attId = part.Body.AttachmentId;
                         MessagePartBody attachPart = GServices.Users.Messages.Attachments.Get(userId, messageId, attId).Execute();
-                        string date = DateTime.Now.ToString("yyyy-MM-dd-HH-mm", DateTimeFormatInfo.InvariantInfo);
+                        string date = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", DateTimeFormatInfo.InvariantInfo);
                         part.Filename = date + " Facture";
                         byte[] data = Base64ToByte(attachPart.Data);
                         File.WriteAllBytes(Path.Combine(outputDir, part.Filename), data);
